@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 //import model product
 use App\Models\Product; 
+use App\Models\Category;
 
 //import return type View
 use Illuminate\View\View;
@@ -26,11 +27,29 @@ class ProductController extends Controller
      */
     public function index() : View
     {
-        //get all products
-        $products = Product::latest()->paginate(10);
+        $query = Product::query();
 
-        //render view with products
-        return view('products.index', compact('products'));
+        // Pencarian nama produk
+        if (request('q')) {
+            $query->where('title', 'like', '%' . request('q') . '%');
+        }
+
+        // Filter stok
+        if (request('stock') === 'available') {
+            $query->where('stock', '>', 0);
+        } elseif (request('stock') === 'empty') {
+            $query->where('stock', '=', 0);
+        }
+
+        // Filter kategori
+        if (request('category_id')) {
+            $query->where('category_id', request('category_id'));
+        }
+
+        $products = $query->latest()->paginate(10)->withQueryString();
+        $categories = \App\Models\Category::orderBy('name')->get();
+
+        return view('products.index', compact('products', 'categories'));
     }
 
     /**
@@ -40,7 +59,8 @@ class ProductController extends Controller
      */
     public function create(): View
     {
-        return view('products.create');
+        $categories = Category::orderBy('name')->get();
+        return view('products.create', compact('categories'));
     }
 
     /**
@@ -57,7 +77,8 @@ class ProductController extends Controller
             'title'         => 'required|min:5',
             'description'   => 'required|min:10',
             'price'         => 'required|numeric',
-            'stock'         => 'required|numeric'
+            'stock'         => 'required|numeric',
+            'category_id'   => 'nullable|exists:categories,id',
         ]);
 
         //upload image
@@ -70,7 +91,8 @@ class ProductController extends Controller
             'title'         => $request->title,
             'description'   => $request->description,
             'price'         => $request->price,
-            'stock'         => $request->stock
+            'stock'         => $request->stock,
+            'category_id'   => $request->category_id,
         ]);
 
         //redirect to index
@@ -102,9 +124,8 @@ class ProductController extends Controller
     {
         //get product by ID
         $product = Product::findOrFail($id);
-
-        //render view with product
-        return view('products.edit', compact('product'));
+        $categories = Category::orderBy('name')->get();
+        return view('products.edit', compact('product', 'categories'));
     }
         
     /**
@@ -122,7 +143,8 @@ class ProductController extends Controller
             'title'         => 'required|min:5',
             'description'   => 'required|min:10',
             'price'         => 'required|numeric',
-            'stock'         => 'required|numeric'
+            'stock'         => 'required|numeric',
+            'category_id'   => 'nullable|exists:categories,id',
         ]);
 
         //get product by ID
@@ -144,7 +166,8 @@ class ProductController extends Controller
                 'title'         => $request->title,
                 'description'   => $request->description,
                 'price'         => $request->price,
-                'stock'         => $request->stock
+                'stock'         => $request->stock,
+                'category_id'   => $request->category_id,
             ]);
 
         } else {
@@ -154,7 +177,8 @@ class ProductController extends Controller
                 'title'         => $request->title,
                 'description'   => $request->description,
                 'price'         => $request->price,
-                'stock'         => $request->stock
+                'stock'         => $request->stock,
+                'category_id'   => $request->category_id,
             ]);
         }
 

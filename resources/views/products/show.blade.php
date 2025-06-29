@@ -115,6 +115,13 @@
                         <div class="card p-4">
                             <div class="product-title mb-2">
                                 {{ $product->title }}
+                                <div class="mt-2">
+                                    @if($product->category)
+                                        <span class="badge-category"><i class="fas fa-list me-1"></i> {{ $product->category->name }}</span>
+                                    @else
+                                        <span class="badge bg-light text-muted">-</span>
+                                    @endif
+                                </div>
                             </div>
                             <div class="mb-3">
                                 <span class="badge badge-price">

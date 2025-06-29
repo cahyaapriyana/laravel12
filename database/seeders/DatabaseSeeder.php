@@ -3,6 +3,7 @@
 namespace Database\Seeders;
 
 use App\Models\User;
+use App\Models\Category;
 // use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 
@@ -19,5 +20,15 @@ class DatabaseSeeder extends Seeder
             'name' => 'Test User',
             'email' => 'test@example.com',
         ]);
+
+        // Seed kategori contoh
+        if (Category::count() === 0) {
+            Category::insert([
+                ['name' => 'Elektronik'],
+                ['name' => 'Fashion'],
+                ['name' => 'Makanan'],
+                ['name' => 'Buku'],
+            ]);
+        }
     }
 }

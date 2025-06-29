@@ -375,6 +375,32 @@
                                 </div>
                             </div>
 
+                            <!-- Category Section -->
+                            <div class="form-section">
+                                <div class="form-section-title">
+                                    <i class="fas fa-list me-1"></i> Kategori Produk
+                                </div>
+                                <div class="row">
+                                    <div class="col-md-12 mb-3">
+                                        <label class="form-label" for="category_id">
+                                            <i class="fas fa-tags me-1"></i> Pilih Kategori
+                                        </label>
+                                        <select name="category_id" id="category_id" class="form-select @error('category_id') is-invalid @enderror">
+                                            <option value="">-- Pilih Kategori --</option>
+                                            @foreach($categories as $cat)
+                                                <option value="{{ $cat->id }}" {{ old('category_id') == $cat->id ? 'selected' : '' }}>{{ $cat->name }}</option>
+                                            @endforeach
+                                        </select>
+                                        @error('category_id')
+                                            <div class="alert alert-danger mt-2">
+                                                <i class="fas fa-exclamation-triangle me-2"></i>
+                                                {{ $message }}
+                                            </div>
+                                        @enderror
+                                    </div>
+                                </div>
+                            </div>
+
                             <!-- Pricing & Stock Section -->
                             <div class="form-section">
                                 <div class="form-section-title">

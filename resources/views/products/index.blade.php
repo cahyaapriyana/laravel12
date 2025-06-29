@@ -244,6 +244,30 @@
         .btn-loading .loading-spinner {
             display: inline-block;
         }
+
+        .badge-category {
+            background: linear-gradient(45deg, #6366f1, #8b5cf6);
+            color: #fff;
+            font-weight: 600;
+            font-size: 0.95rem;
+            padding: 7px 18px;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(99,102,241,0.10);
+            display: inline-block;
+            margin-bottom: 4px;
+            letter-spacing: 0.5px;
+        }
+
+        .form-label[for="search"] i { color: orange; }
+        .form-label[for="search"] { color: orange !important; }
+        .form-label[for="stock"] i { color: #10b981; }
+        .form-label[for="stock"] { color: #10b981 !important; }
+        .form-label[for="category_id"] i { color: #f59e0b; }
+        .form-label[for="category_id"] { color: #f59e0b !important; }
+        .form-control:focus, .form-select:focus {
+            border-color: #6366f1;
+            box-shadow: 0 0 0 0.15rem rgba(99,102,241,0.15);
+        }
     </style>
 </head>
 <body>
@@ -273,28 +297,71 @@
                     </div>
                 </div>
 
+                <!-- Search & Filter Form -->
+                <form method="GET" action="{{ route('products.index') }}" class="row g-3 align-items-end mb-4 fade-in-up" style="animation-delay: 0.15s;">
+                    <div class="col-md-6 col-lg-4">
+                        <label for="search" class="form-label mb-2 fw-bold" style="font-size:1.08rem;">
+                            <i class="fas fa-search me-1"></i> Pencarian Produk
+                        </label>
+                        <input type="text" name="q" id="search" class="form-control" placeholder="Cari nama produk..." value="{{ request('q') }}">
+                    </div>
+                    <div class="col-md-4 col-lg-3">
+                        <label for="stock" class="form-label mb-2 fw-bold" style="font-size:1.08rem;">
+                            <i class="fas fa-filter me-1"></i> Filter Stok
+                        </label>
+                        <select name="stock" id="stock" class="form-select">
+                            <option value="" {{ request('stock')==='' ? 'selected' : '' }}>Semua</option>
+                            <option value="available" {{ request('stock')==='available' ? 'selected' : '' }}>Tersedia</option>
+                            <option value="empty" {{ request('stock')==='empty' ? 'selected' : '' }}>Habis</option>
+                        </select>
+                    </div>
+                    <div class="col-md-4 col-lg-3">
+                        <label for="category_id" class="form-label mb-2 fw-bold" style="font-size:1.08rem;">
+                            <i class="fas fa-list me-1"></i> Filter Kategori
+                        </label>
+                        <select name="category_id" id="category_id" class="form-select">
+                            <option value="">Semua Kategori</option>
+                            @foreach($categories as $cat)
+                                <option value="{{ $cat->id }}" {{ request('category_id') == $cat->id ? 'selected' : '' }}>{{ $cat->name }}</option>
+                            @endforeach
+                        </select>
+                    </div>
+                    <div class="col-md-2 col-lg-2">
+                        <button type="submit" class="btn btn-modern btn-primary w-100">
+                            <i class="fas fa-search me-1"></i> Cari
+                        </button>
+                    </div>
+                    <div class="col-md-12 col-lg-3">
+                        @if(request('q') || request('stock'))
+                        <a href="{{ route('products.index') }}" class="btn btn-modern btn-warning w-100 mt-2 mt-lg-0">
+                            <i class="fas fa-times me-1"></i> Reset
+                        </a>
+                        @endif
+                    </div>
+                </form>
+
                 <!-- Stats Cards -->
-                <div class="row mb-4 fade-in-up" style="animation-delay: 0.2s;">
-                    <div class="col-md-3">
-                        <div class="stats-card">
+                <div class="row mb-4 fade-in-up g-3" style="animation-delay: 0.2s;">
+                    <div class="col-12 col-sm-6 col-md-3">
+                        <div class="stats-card h-100">
                             <div class="stats-number">{{ $products->total() }}</div>
                             <div class="stats-label">Total Products</div>
                         </div>
                     </div>
-                    <div class="col-md-3">
-                        <div class="stats-card">
+                    <div class="col-12 col-sm-6 col-md-3">
+                        <div class="stats-card h-100">
                             <div class="stats-number">{{ $products->where('stock', '>', 0)->count() }}</div>
                             <div class="stats-label">In Stock</div>
                         </div>
                     </div>
-                    <div class="col-md-3">
-                        <div class="stats-card">
+                    <div class="col-12 col-sm-6 col-md-3">
+                        <div class="stats-card h-100">
                             <div class="stats-number">{{ $products->where('stock', 0)->count() }}</div>
                             <div class="stats-label">Out of Stock</div>
                         </div>
                     </div>
-                    <div class="col-md-3">
-                        <div class="stats-card">
+                    <div class="col-12 col-sm-6 col-md-3">
+                        <div class="stats-card h-100">
                             <div class="stats-number">{{ $products->count() }}</div>
                             <div class="stats-label">This Page</div>
                         </div>
@@ -314,6 +381,9 @@
                                             </th>
                                             <th scope="col">
                                                 <i class="fas fa-tag me-2"></i>Title
+                                            </th>
+                                            <th scope="col">
+                                                <i class="fas fa-list me-2"></i>Kategori
                                             </th>
                                             <th scope="col">
                                                 <i class="fas fa-dollar-sign me-2"></i>Price
@@ -337,6 +407,13 @@
                                                 <td>
                                                     <div class="fw-bold">{{ $product->title }}</div>
                                                     <small class="text-muted">ID: {{ $product->id }}</small>
+                                                </td>
+                                                <td>
+                                                    @if($product->category)
+                                                        <span class="badge-category"><i class="fas fa-list me-1"></i> {{ $product->category->name }}</span>
+                                                    @else
+                                                        <span class="badge bg-light text-muted">-</span>
+                                                    @endif
                                                 </td>
                                                 <td>
                                                     <span class="badge bg-success fs-6">
