@@ -166,22 +166,39 @@
             opacity: 0.5;
         }
 
-        .pagination {
+        .pagination, .custom-pagination {
             justify-content: center;
             margin-top: 30px;
+            margin-bottom: 0;
         }
-
-        .page-link {
+        .custom-pagination .page-item {
+            margin: 0 3px;
+        }
+        .custom-pagination .page-link {
             border-radius: 10px;
-            margin: 0 5px;
             border: none;
             color: var(--primary-color);
             font-weight: 600;
+            background: white;
+            transition: all 0.2s;
+            box-shadow: 0 2px 8px rgba(99,102,241,0.07);
         }
-
-        .page-item.active .page-link {
+        .custom-pagination .page-link:hover {
             background: linear-gradient(45deg, var(--primary-color), var(--secondary-color));
+            color: #fff;
+        }
+        .custom-pagination .page-item.active .page-link {
+            background: linear-gradient(45deg, var(--primary-color), var(--secondary-color));
+            color: #fff;
             border: none;
+        }
+        .custom-pagination .page-item.disabled .page-link {
+            background: #e5e7eb;
+            color: #a1a1aa;
+        }
+        /* Hide Laravel default pagination info */
+        .pagination-info, .dataTables_info {
+            display: none !important;
         }
 
         .header-section {
@@ -382,9 +399,32 @@
 
                 <!-- Pagination -->
                 @if($products->hasPages())
-                    <div class="d-flex justify-content-center mt-4">
-                        {{ $products->links() }}
-                    </div>
+                    <nav aria-label="Product pagination" class="fade-in-up" style="animation-delay: 0.6s;">
+                        <ul class="pagination custom-pagination">
+                            {{-- Previous Page Link --}}
+                            @if ($products->onFirstPage())
+                                <li class="page-item disabled"><span class="page-link">&laquo;</span></li>
+                            @else
+                                <li class="page-item"><a class="page-link" href="{{ $products->previousPageUrl() }}" rel="prev">&laquo;</a></li>
+                            @endif
+
+                            {{-- Pagination Elements --}}
+                            @foreach ($products->getUrlRange(1, $products->lastPage()) as $page => $url)
+                                @if ($page == $products->currentPage())
+                                    <li class="page-item active"><span class="page-link">{{ $page }}</span></li>
+                                @else
+                                    <li class="page-item"><a class="page-link" href="{{ $url }}">{{ $page }}</a></li>
+                                @endif
+                            @endforeach
+
+                            {{-- Next Page Link --}}
+                            @if ($products->hasMorePages())
+                                <li class="page-item"><a class="page-link" href="{{ $products->nextPageUrl() }}" rel="next">&raquo;</a></li>
+                            @else
+                                <li class="page-item disabled"><span class="page-link">&raquo;</span></li>
+                            @endif
+                        </ul>
+                    </nav>
                 @endif
 
             </div>
